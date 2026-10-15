@@ -8,6 +8,8 @@
 <style>
 :root{--bg:#f3f6f1;--card:#fff;--ink:#172b20;--muted:#617064;--line:#dce5dc;--green:#187344;--pale:#e7f4e9;--amber:#8b5b00}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}header{padding:24px clamp(16px,4vw,48px);background:#123b29;color:white}header .eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;color:#bde7c8}h1{font-size:clamp(24px,4vw,38px);line-height:1.2;margin:8px 0}header p{margin:8px 0;color:#dcebe0;line-height:1.6}.wrap{max-width:1450px;margin:auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}.maphead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:16px;border-bottom:1px solid var(--line)}.status{border-radius:999px;padding:7px 10px;background:var(--pale);color:var(--green);font-size:12px;font-weight:700}#map{height:min(66vh,680px);min-height:400px;background:#dce8dc}.mapnote{padding:12px 16px;color:var(--muted);font-size:13px;line-height:1.65}.side{padding:18px}.side h2{font-size:19px;margin:0 0 8px}.side p{line-height:1.6}.label{display:block;margin:15px 0 7px;font-weight:700;font-size:14px}select,button{font:inherit;width:100%;padding:12px;border:1px solid #cbd8cc;border-radius:10px;background:white;color:var(--ink)}button{background:var(--green);color:white;border:0;font-weight:800;margin-top:12px;cursor:pointer}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.stat{border:1px solid var(--line);border-radius:12px;padding:13px}.stat b{display:block;font-size:22px}.stat span{font-size:12px;color:var(--muted)}.notice{background:#fff6df;border:1px solid #f0dfad;color:#604b19;padding:13px;border-radius:12px;font-size:13px;line-height:1.65;margin-top:14px}.legend{margin:14px 0}.bar{height:13px;border-radius:8px;background:linear-gradient(90deg,#c52c2c,#f29b28,#f1d84a,#7acb58,#17854a);margin:8px 0}.scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}.action{padding:13px;border:1px solid var(--line);border-radius:12px;margin-top:10px}.action strong{display:block;margin-bottom:4px}.small{font-size:12px;color:var(--muted);line-height:1.65}a{color:var(--green)}footer{text-align:center;padding:12px 20px 28px;color:var(--muted);font-size:12px}@media(max-width:900px){.wrap{grid-template-columns:1fr;padding:12px}#map{height:52vh;min-height:350px}}
+
+.risk-status{display:flex;align-items:center;gap:10px;background:#f5f7f3;border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:10px}.risk-dot{width:12px;height:12px;border-radius:50%;background:#89958a;flex:0 0 auto}.risk-formula{margin-top:12px;padding:12px;background:#f8faf7;border-radius:10px;border:1px solid var(--line);line-height:1.65}.risk-legend{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.risk-legend div{display:flex;align-items:center;gap:6px;font-size:12px}.risk-legend i{width:12px;height:12px;border-radius:3px;display:inline-block;flex:0 0 auto}.risk-legend span{margin-left:auto;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -21,7 +23,21 @@
 <button id="apply">แสดงข้อมูลบนแผนที่</button>
 <div class="stats"><div class="stat"><b>NASA</b><span>แหล่งข้อมูลดาวเทียม</span></div><div class="stat"><b id="dateSummary">—</b><span>วันที่เลือก</span></div></div>
 <div class="legend"><strong>แนวทางอ่านสี NDVI</strong><div class="bar"></div><div class="scale"><span>ค่าต่ำ</span><span>ปานกลาง</span><span>ค่าสูง</span></div><p class="small">ใช้ดูความเขียวของพืชในภาพรวมเท่านั้น สีไม่ใช่คำวินิจฉัยสุขภาพพืช และเกณฑ์ต้องพิจารณาตามชนิดพืช ระยะเติบโต ฤดูกาล และคุณภาพภาพ</p></div>
-<div class="action"><strong>สิ่งที่ควรทำเมื่อพบจุดผิดปกติ</strong><span class="small">ลงตรวจใบและลำต้น ตรวจความชื้นดิน และเปรียบเทียบกับพื้นที่ใกล้เคียงก่อนตัดสินใจให้น้ำหรือใช้สารใด ๆ</span></div>
+
+<div class="action" id="waterRisk">
+<strong>ประเมินความเสี่ยงขาดน้ำของพืช</strong>
+<p class="small">ระบบกำลังแสดงภาพดาวเทียมเพื่อประกอบการตรวจสอบ ยังไม่มีคะแนนความเสี่ยงจริง เพราะต้องอ่านค่าพิกเซล NDVI และอุณหภูมิจากข้อมูลเชิงตัวเลขก่อน ไม่ควรสร้างสีเสี่ยงขึ้นจากการคาดเดา</p>
+<div class="risk-status"><span class="risk-dot"></span><span><b>ยังไม่มีผลคำนวณ</b><br><span class="small">เลือกดู NDVI และอุณหภูมิพื้นผิวด้านบนได้</span></span></div>
+<div class="risk-formula"><b>วิธีคำนวณที่จะใช้</b><br><span class="small">คะแนนเริ่มต้น = 35% ความผิดปกติ NDVI + 35% ความร้อนผิดปกติ + 20% ความชื้นดิน + 10% ฝนสะสม โดยปรับทุกตัวแปรให้อยู่ในช่วง 0–1 เทียบกับสภาพปกติของพื้นที่และฤดูกาล</span></div>
+<div class="risk-legend">
+<div><i style="background:#218c4a"></i>ต่ำ <span>0–19</span></div>
+<div><i style="background:#e5d83b"></i>เฝ้าระวัง <span>20–39</span></div>
+<div><i style="background:#ef982f"></i>สูงขึ้น <span>40–69</span></div>
+<div><i style="background:#d93636"></i>สูงมาก <span>70–100</span></div>
+</div>
+<p class="small">สีและช่วงคะแนนข้างต้นเป็นเกณฑ์แนวคิดเท่านั้น ยังไม่ได้ระบายลงแผนที่จริงจนกว่าจะมีข้อมูลตัวเลขและผ่านการตรวจสอบภาคสนาม</p>
+</div>
+\n<div class="action"><strong>สิ่งที่ควรทำเมื่อพบจุดผิดปกติ</strong><span class="small">ลงตรวจใบและลำต้น ตรวจความชื้นดิน และเปรียบเทียบกับพื้นที่ใกล้เคียงก่อนตัดสินใจให้น้ำหรือใช้สารใด ๆ</span></div>
 <div class="notice"><strong>ข้อจำกัดของต้นแบบ</strong><br>ชั้นข้อมูลจาก GIBS เป็นภาพแสดงผล ไม่ใช่การอ่านค่าตัวเลข NDVI รายแปลงโดยตรง จึงยังไม่คำนวณเปอร์เซ็นต์สุขภาพพืชหรือสรุปว่าแปลงขาดน้ำ ข้อมูล NDVI MODIS มักเป็นภาพรวมแบบช่วงเวลา ไม่ใช่ภาพใหม่ทุกวัน หากชั้นข้อมูลหรือวันที่ไม่มีภาพ ระบบอาจแสดงภาพว่าง</div>
 <p class="small">แหล่งข้อมูล: <a href="https://modis.gsfc.nasa.gov/data/dataprod/mod13.php" target="_blank" rel="noopener">NASA MODIS Vegetation Indices</a> · <a href="https://gibs.earthdata.nasa.gov/" target="_blank" rel="noopener">NASA GIBS</a></p>
 </aside>
