@@ -13,7 +13,7 @@
 <body>
 <header><div class="eyebrow">SATELLITE CROP MONITORING · NASA DATA</div><h1>ผู้ช่วยติดตามสุขภาพพืช</h1><p>บ้านผักไหมใหญ่ · ตำบลผักไหม · อำเภอห้วยทับทัน · จังหวัดศรีสะเกษ</p><p>ดูภาพรวมพื้นที่ เลือกชั้นข้อมูล และใช้ผลดาวเทียมช่วยวางแผนลงตรวจแปลง</p></header>
 <main class="wrap">
-<section class="card"><div class="maphead"><strong>แผนที่พื้นที่เกษตร</strong><span class="status" id="status">กำลังโหลดชั้นข้อมูล…</span></div><div id="map" aria-label="แผนที่ติดตามสุขภาพพืช"></div><div class="mapnote">พื้นหลังเป็นภาพถ่ายดาวเทียมสำหรับดูพื้นที่โดยรอบ จุดหมุดแสดงตำแหน่งอ้างอิงโดยประมาณของชุมชน ไม่ใช่ขอบเขตหมู่บ้านหรือขอบเขตแปลงที่รับรองแล้ว</div></section>
+<section class="card"><div class="maphead"><strong>แผนที่พื้นที่เกษตร</strong><span class="status" id="status">กำลังโหลดชั้นข้อมูล…</span></div><div id="map" aria-label="แผนที่ติดตามสุขภาพพืช"></div><div class="mapnote">แผนที่ถนนอ่านง่ายแบบแผนที่ทั่วไป และจำกัดการเลื่อนให้อยู่ในกรอบพื้นที่ชุมชนโดยประมาณ จุดหมุดและกรอบนี้ยังไม่ใช่ขอบเขตหมู่บ้านที่รับรองอย่างเป็นทางการ</div></section>
 <aside class="card side">
 <h2>ติดตามสภาพพืช</h2><p class="small">เลือกชั้นข้อมูลดาวเทียมและวันที่ที่ต้องการดู</p>
 <label class="label" for="date">วันที่ของภาพ</label><select id="date"></select>
@@ -30,9 +30,14 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 (function(){
-const center=[15.002,104.02],map=L.map('map').setView(center,12);
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Satellite basemap © Esri'}).addTo(map);
-L.marker(center).addTo(map).bindPopup('<b>บ้านผักไหมใหญ่</b><br>ตำแหน่งอ้างอิงโดยประมาณ');
+const center=[15.002,104.02];
+// กรอบแผนที่สำหรับดูบริเวณชุมชนโดยประมาณเท่านั้น ไม่ใช่แนวเขตทางการ
+const villageBounds=L.latLngBounds([14.975,103.985],[15.03,104.055]);
+const map=L.map('map',{minZoom:12,maxZoom:18,maxBounds:villageBounds,maxBoundsViscosity:1,zoomControl:true}).setView(center,14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+L.marker(center).addTo(map).bindPopup('<b>บ้านผักไหมใหญ่</b><br>จุดอ้างอิงโดยประมาณ — ยังไม่ใช่หมุดหรือขอบเขตทางการ');
+map.setMaxBounds(villageBounds);
+map.on('drag',function(){map.panInsideBounds(villageBounds,{animate:false})});
 const dateSelect=document.getElementById('date'),layerSelect=document.getElementById('layer'),status=document.getElementById('status');
 const today=new Date();
 for(let i=0;i<45;i++){const d=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()-i));const iso=d.toISOString().slice(0,10);const o=document.createElement('option');o.value=iso;o.textContent=iso;dateSelect.appendChild(o)}
