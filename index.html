@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101a2b">
+<title>NASA LST Heatmap — บ้านผักไหมใหญ่</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+:root{color-scheme:dark;--bg:#0a1220;--panel:#111e30;--line:#25364d;--muted:#9fb0c5;--text:#eef5ff;--accent:#62d5b4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}header{padding:22px clamp(16px,4vw,48px);border-bottom:1px solid var(--line);background:linear-gradient(120deg,#12243a,#101a2b)}.eyebrow{font-size:12px;letter-spacing:.14em;color:var(--accent);font-weight:800;text-transform:uppercase}h1{font-size:clamp(22px,4vw,36px);line-height:1.2;margin:8px 0}header p{margin:8px 0 0;color:var(--muted)}main{max-width:1400px;margin:auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px}.map-card,.panel{border:1px solid var(--line);background:var(--panel);border-radius:16px;overflow:hidden}.map-top{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--line)}.pill{font-size:12px;color:#d9f9ef;border:1px solid #2e6d5d;background:#173d36;padding:5px 9px;border-radius:999px}#map{height:min(68vh,680px);min-height:420px;background:#18283b}.map-bottom{padding:12px 16px;color:var(--muted);font-size:12px;line-height:1.6}.panel{padding:18px}.panel h2{font-size:16px;margin:0 0 12px}.field-label{display:block;font-size:13px;color:var(--muted);margin:14px 0 7px}select,button{font:inherit;color:var(--text);background:#0b1625;border:1px solid #354a63;border-radius:10px;padding:10px;width:100%}button{cursor:pointer;font-weight:700;background:#153c38;border-color:#2d7968;margin-top:10px}button:hover{background:#1d5148}.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.stat{padding:12px;border:1px solid var(--line);border-radius:12px}.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}.notice{font-size:12px;line-height:1.65;color:#c3d0e1;background:#0b1625;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:14px}.notice strong{color:#ffd58a}.legend{margin-top:14px}.legend-bar{height:12px;border-radius:999px;background:linear-gradient(90deg,#253baf,#2bb9c7,#5bc56c,#f3dc43,#f28a32,#c52c2c);margin:9px 0 5px}.legend-scale{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}.small{font-size:12px;color:var(--muted);line-height:1.6}footer{padding:10px 20px 28px;text-align:center;color:var(--muted);font-size:12px}a{color:#8ce5d0}@media(max-width:900px){main{grid-template-columns:1fr;padding:12px}#map{height:55vh;min-height:360px}.panel{order:2}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">NASA EARTH OBSERVATION</div><h1>แผนที่อุณหภูมิพื้นผิวดิน</h1><p>บ้านผักไหมใหญ่ · ตำบลผักไหม · อำเภอห้วยทับทัน · จังหวัดศรีสะเกษ</p></header>
+<main>
+<section class="map-card">
+ <div class="map-top"><strong>แผนที่ดาวเทียมและชั้นข้อมูล LST</strong><span class="pill" id="status">กำลังโหลดแผนที่…</span></div>
+ <div id="map" role="application" aria-label="แผนที่บ้านผักไหมใหญ่"></div>
+ <div class="map-bottom">ชั้นข้อมูล LST ใช้ภาพจาก NASA Global Imagery Browse Services (GIBS) และอาจไม่มีภาพในบางวัน/บางพื้นที่เนื่องจากเมฆหรือข้อจำกัดของข้อมูลดาวเทียม · วันที่เลือกเป็นวันที่ข้อมูลภาพ ไม่ใช่การวัดอุณหภูมิอากาศ ณ จุดนั้น</div>
+</section>
+<aside class="panel">
+ <h2>ควบคุมแผนที่</h2>
+ <label class="field-label" for="date">วันที่ของภาพ NASA (ย้อนหลัง 7 วัน)</label>
+ <select id="date"></select>
+ <label class="field-label" for="layer">ชั้นข้อมูล</label>
+ <select id="layer"><option value="MODIS_Terra_Land_Surface_Temp_Day">อุณหภูมิพื้นผิวดิน — กลางวัน (Terra MODIS)</option><option value="MODIS_Terra_Land_Surface_Temp_Night">อุณหภูมิพื้นผิวดิน — กลางคืน (Terra MODIS)</option></select>
+ <button id="apply">อัปเดตแผนที่</button>
+ <div class="stats"><div class="stat"><b>NASA</b><span>แหล่งข้อมูลภาพ</span></div><div class="stat"><b>~1 กม.</b><span>ความละเอียดโดยประมาณของ MODIS LST</span></div></div>
+ <div class="notice"><strong>โปรดทราบ</strong><br>สีบนแผนที่เป็นภาพที่ NASA เผยแพร่ ไม่ใช่ค่าตัวเลขอุณหภูมิที่อ่านได้โดยตรงจากพิกเซล หน้านี้จะไม่แสดงค่า °C รายจุดจนกว่าจะเชื่อมข้อมูลค่าราสเตอร์ LST และตรวจสอบ QA/no-data ได้อย่างถูกต้อง</div>
+ <div class="legend"><b style="font-size:13px">การอ่านข้อมูล</b><p class="small">LST คืออุณหภูมิพื้นผิวที่ดาวเทียมประมาณค่า ไม่ใช่อุณหภูมิอากาศในร่มหรือค่าจากสถานีตรวจอากาศ</p></div>
+ <p class="small">แหล่งข้อมูล: <a href="https://earthdata.nasa.gov/" target="_blank" rel="noopener">NASA Earthdata</a> · <a href="https://www.earthdata.nasa.gov/data/instruments/modis" target="_blank" rel="noopener">MODIS</a> · <a href="https://gibs.earthdata.nasa.gov/" target="_blank" rel="noopener">NASA GIBS</a></p>
+</aside>
+</main>
+<footer>ต้นแบบเว็บไซต์ชุมชน · ไม่แสดงค่าที่คาดเดาหรือข้อมูลจำลองว่าเป็นข้อมูลจริง</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+(function(){
+ const center=[15.002,104.02];
+ const map=L.map('map',{zoomControl:true}).setView(center,12);
+ const satellite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}).addTo(map);
+ const marker=L.marker(center).addTo(map).bindPopup('<b>บ้านผักไหมใหญ่</b><br>ตำบลผักไหม อำเภอห้วยทับทัน จังหวัดศรีสะเกษ');
+ const status=document.getElementById('status');
+ const dateSelect=document.getElementById('date');
+ const layerSelect=document.getElementById('layer');
+ const now=new Date();
+ // Use UTC calendar dates to avoid creating invalid future dates in NASA imagery requests.
+ for(let i=0;i<7;i++){
+   const d=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()-i));
+   const iso=d.toISOString().slice(0,10);
+   const opt=document.createElement('option');opt.value=iso;opt.textContent=iso+(i===0?' (วันนี้ตาม UTC)':'');dateSelect.appendChild(opt);
+ }
+ let lstLayer=null;
+ function setLayer(){
+   if(lstLayer)map.removeLayer(lstLayer);
+   const layerName=layerSelect.value;
+   const selectedDate=dateSelect.value;
+   const url='https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi';
+   lstLayer=L.tileLayer.wms(url,{layers:layerName,format:'image/png',transparent:true,version:'1.1.1',time:selectedDate,styles:'',tileSize:256,opacity:0.72,attribution:'NASA EOSDIS GIBS'}).addTo(map);
+   status.textContent='ชั้นข้อมูล NASA · '+selectedDate;
+   lstLayer.on('tileerror',()=>{status.textContent='บางไทล์โหลดไม่ได้ — อาจไม่มีข้อมูลวันนั้น';});
+ }
+ document.getElementById('apply').addEventListener('click',setLayer);
+ setLayer();
+})();
+</script>
+</body>
+</html>
